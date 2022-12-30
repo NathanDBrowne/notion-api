@@ -31,8 +31,8 @@ const notion = new client_1.Client({
 // Require an async function here to support await with the DB query
 const server = http_1.default.createServer((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    switch (req.url) {
-        case "/":
+    if (typeof req.url == "string") {
+        if (req.url == "/menu") {
             // Query the database and wait for the result
             const query = yield notion.databases.query({
                 database_id: notionDatabaseId,
@@ -40,11 +40,24 @@ const server = http_1.default.createServer((req, res) => __awaiter(void 0, void 
             res.setHeader("Content-Type", "application/json");
             res.writeHead(200);
             res.end(JSON.stringify(query.results));
-            break;
-        default:
+        }
+        else if (req.url.split("/")[1] == "section") {
+            let dbId = req.url.split("/").at(-1) || "";
+            res.setHeader("Content-Type", "application/json");
+            res.writeHead(200);
+            try {
+                const content = yield notion.blocks.children.list({ block_id: dbId });
+                res.end(JSON.stringify(content));
+            }
+            catch (error) {
+                res.end(JSON.stringify({ error: "Resource not found" }));
+            }
+        }
+        else {
             res.setHeader("Content-Type", "application/json");
             res.writeHead(404);
             res.end(JSON.stringify({ error: "Resource not found" }));
+        }
     }
 }));
 server.listen(port, () => {
