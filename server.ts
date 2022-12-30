@@ -12,14 +12,15 @@ interface ThingToLearn {
 }
 
 // The dotenv library will read from your .env file into these values on `process.env`
-const notionDatabaseId = process.env.NOTION_DATABASE_ID;
+const notionStackId = process.env.NOTION_STACK_ID;
+const notionSkillsId = process.env.NOTION_SKILLS_ID || "none";
 const notionSecret = process.env.NOTION_SECRET;
 const port = process.env.PORT || 8000;
 
 // Will provide an error to users who forget to create the .env file
 // with their Notion data in it
-if (!notionDatabaseId || !notionSecret) {
-  throw Error("Must define NOTION_SECRET and NOTION_DATABASE_ID in env");
+if (!notionStackId || !notionSecret) {
+  throw Error("Must define NOTION_SECRET and NOTION_STACK_ID in env");
 }
 
 // Initializing the Notion client with your secret
@@ -34,19 +35,24 @@ const server = http.createServer(async (req, res) => {
     if (req.url == "/menu") {
       // Query the database and wait for the result
       const query = await notion.databases.query({
-        database_id: notionDatabaseId,
+        database_id: notionStackId,
       });
 
       res.setHeader("Content-Type", "application/json");
       res.writeHead(200);
       res.end(JSON.stringify(query.results));
-    } else if (req.url.split("/")[1] == "section") {
+    } else if (req.url.split("/")[1] == "stack-item") {
       let dbId = req.url.split("/").at(-1) || "";
       res.setHeader("Content-Type", "application/json");
       res.writeHead(200);
 
       try {
-        const content = await notion.blocks.children.list({ block_id: dbId });
+        const content = await notion.databases.query({
+          database_id: notionSkillsId,
+          filter: {
+            or: [{ property: "Parents", relation: { contains: dbId } }],
+          },
+        });
         res.end(JSON.stringify(content));
       } catch (error) {
         res.end(JSON.stringify({ error: "Resource not found" }));
