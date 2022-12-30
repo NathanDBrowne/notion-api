@@ -53,7 +53,7 @@ const server = http.createServer(async (req, res) => {
             or: [{ property: "Parents", relation: { contains: dbId } }],
           },
         });
-        res.end(JSON.stringify(content));
+        res.end(JSON.stringify(content.results));
       } catch (error) {
         res.end(JSON.stringify({ error: "Resource not found" }));
       }

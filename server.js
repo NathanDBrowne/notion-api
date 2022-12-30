@@ -53,7 +53,7 @@ const server = http_1.default.createServer((req, res) => __awaiter(void 0, void 
                         or: [{ property: "Parents", relation: { contains: dbId } }],
                     },
                 });
-                res.end(JSON.stringify(content));
+                res.end(JSON.stringify(content.results));
             }
             catch (error) {
                 res.end(JSON.stringify({ error: "Resource not found" }));
