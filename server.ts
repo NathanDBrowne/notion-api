@@ -41,7 +41,10 @@ const server = http.createServer(async (req, res) => {
       res.setHeader("Content-Type", "application/json");
       res.writeHead(200);
       res.end(JSON.stringify(query.results));
+
+      //
     } else if (req.url.split("/")[1] == "stack-item") {
+      // stack item query
       let dbId = req.url.split("/").at(-1) || "";
       res.setHeader("Content-Type", "application/json");
       res.writeHead(200);
@@ -52,6 +55,22 @@ const server = http.createServer(async (req, res) => {
           filter: {
             or: [{ property: "Parents", relation: { contains: dbId } }],
           },
+        });
+        res.end(JSON.stringify(content.results));
+      } catch (error) {
+        res.end(JSON.stringify({ error: "Resource not found" }));
+      }
+
+      //
+    } else if (req.url.split("/")[1] == "article") {
+      //article query
+      let pageId = req.url.split("/").at(-1) || "";
+      res.setHeader("Content-Type", "application/json");
+      res.writeHead(200);
+
+      try {
+        const content = await notion.blocks.children.list({
+          block_id: pageId,
         });
         res.end(JSON.stringify(content.results));
       } catch (error) {
