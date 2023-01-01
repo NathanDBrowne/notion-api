@@ -15,6 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv").config();
 const http_1 = __importDefault(require("http"));
 const client_1 = require("@notionhq/client");
+// This is Typescript  interface for the shape of the object we will
+// create based on our database to send to the React app
+// When the data is queried it will come back in a much more complicated shape, so our goal is to
+// simplify it to make it easy to work with on the front end
 // The dotenv library will read from your .env file into these values on `process.env`
 const notionStackId = process.env.NOTION_STACK_ID;
 const notionSkillsId = process.env.NOTION_SKILLS_ID || "none";
@@ -52,7 +56,13 @@ const server = http_1.default.createServer((req, res) => __awaiter(void 0, void 
                 const content = yield notion.databases.query({
                     database_id: notionSkillsId,
                     filter: {
-                        or: [{ property: "Parents", relation: { contains: dbId } }],
+                        and: [
+                            {
+                                property: "Status",
+                                status: { does_not_equal: "Not started" },
+                            },
+                            { property: "Parents", relation: { contains: dbId } },
+                        ],
                     },
                 });
                 res.end(JSON.stringify(content.results));
@@ -60,7 +70,6 @@ const server = http_1.default.createServer((req, res) => __awaiter(void 0, void 
             catch (error) {
                 res.end(JSON.stringify({ error: "Resource not found" }));
             }
-            //
         }
         else if (req.url.split("/")[1] == "article") {
             //article query
