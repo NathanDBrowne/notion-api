@@ -41,9 +41,19 @@ const server = http_1.default.createServer((req, res) => __awaiter(void 0, void 
             // Query the database and wait for the result
             const query = yield notion.databases.query({
                 database_id: notionStackId,
+                sorts: [{ property: "Name", direction: "ascending" }],
+                filter: {
+                    and: [
+                        {
+                            property: "Published",
+                            formula: { number: { does_not_equal: 0 } },
+                        },
+                    ],
+                },
             });
             res.setHeader("Content-Type", "application/json");
             res.writeHead(200);
+            console.log(query.results);
             res.end(JSON.stringify(query.results));
             //
         }
@@ -64,6 +74,7 @@ const server = http_1.default.createServer((req, res) => __awaiter(void 0, void 
                             { property: "Parents", relation: { contains: dbId } },
                         ],
                     },
+                    sorts: [{ property: "Name", direction: "ascending" }],
                 });
                 res.end(JSON.stringify(content.results));
             }
